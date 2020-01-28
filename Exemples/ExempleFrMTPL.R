@@ -36,7 +36,7 @@ data$Area <- as.numeric(data$Area)
 data$VehGas <- ifelse(data$VehGas=="Regular",0.5,-0.5)
 
 ###dummy coding for VehBrand and Region
-data <- data.frame(model.matrix(~.-ClaimNb,data)[,-1])
+data <- data.frame(model.matrix(~.,data))
 
 ##Capping and transformation
 data$VehAge <- ifelse(data$VehAge>20,20,data$VehAge)
@@ -65,6 +65,42 @@ data$DrivAge <- minmax(data$DrivAge)
 data$BonusMalus <- minmax(data$BonusMalus)
 data$Density <- minmax(data$Density)
 
-data <- data[,-1]
+data <- data[,-2]
 
-##
+##Création training et test set
+set.seed(100)
+ll <- sample(c(1:nrow(data)), round(0.9*nrow(data)), replace = FALSE )
+learn <- data[ll ,]
+test <- data[-ll ,]
+Xlearn <- as.matrix(learn[,-2])
+Xtest <- as.matrix(test[,-2])
+##définition du modèle avec Keras
+library( keras )
+
+model <- keras_model_sequential() ##définition du type de modèle
+
+model %>%
+  ## 1ere layer cachée. On doit spécifier les dimensions du input
+  layer_dense(units = 20 , activation ='tanh', input_shape = c(ncol(Xlearn))) %>% 
+  ## output layer. fonction exponentielle
+  layer_dense(units = 1, activation = k_exp )
+
+summary(model)
+
+##Compilation du modèle
+model %>% compile(
+  loss = 'poisson',
+  optimizer ='sgd'
+   )
+
+##Entrainement
+
+fit_sgd <- model %>% fit(as.matrix(Xlearn) , learn$ClaimNb , epochs =10 , batch_size =10000)
+
+Poisson.Deviance <- function(pred, obs){
+  2*(sum(pred)-sum(obs)+sum(log((obs/pred)^(obs))))/length(pred)}
+
+learn$fit.keras <- as.vector(model%>% predict(Xlearn))
+test$fit.keras <- as.vector(model %>% predict(Xtest))
+100*Poisson.Deviance(learn$fit.keras, learn$ClaimNb)
+100*Poisson.Deviance(test$fit.keras, test$ClaimNb)
