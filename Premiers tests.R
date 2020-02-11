@@ -132,7 +132,7 @@ q1 <- 20
 k_clear_session()
 features.0 <- layer_input(shape=c(ncol(XlearnNN)))         # define network for features
 net <- features.0 %>%
-  layer_dense(units = 64, activation = 'tanh') %>% 
+  layer_dense(units = 35, activation = 'tanh') %>% 
   layer_dense(units = 1, activation = k_exp)
 volumes.0 <- layer_input(shape=c(1))                     # define network for offset
 offset <- volumes.0 %>%
@@ -146,8 +146,59 @@ model %>% compile(loss = 'poisson', optimizer = 'nadam')
 {t1 <- proc.time()
   fit <- model %>% fit(list(XlearnNN, WlearnNN), YlearnNN, epochs=1000, batch_size=10000,validation_data=list(list(XvalNN,WvalNN),YvalNN))
   (proc.time()-t1)}
+data_fit <- as.data.frame(fit)
+data_fit %>% 
+  filter(data_fit,epoch>10)
+  
+ggplot(data_fit,aes(x=epoch,y=value,col=data))+
+  geom_line()+
+  scale_y_continuous(limits = c(0.16,0.17))#+
+  #scale_x_continuous(limits=c(250,375))
+
+##On commence à surajuster à partir de 300 epochs environ
+##On retrain sur le test set au complet
+k_clear_session()
+model <- keras_model(inputs=list(features.0, volumes.0), outputs=merged)    
+summary(model)    
+model %>% compile(loss = 'poisson', optimizer = 'nadam')
+
+Xlearn_all <- as.matrix(learnNN[,features])
+Ylearn_all <- as.matrix(learnNN[,features])
+Wlearn_all <- as.matrix(learnNN[,3])
+
+{t1 <- proc.time()
+  fit <- model %>% fit(list(Xlearn_all, Wlearn_all), Ylearn_all, epochs=300, batch_size=10000)
+  (proc.time()-t1)}
+
+learnNN$fit.keras <- as.vector(model %>% predict(list(Xlearn_all, Wlearn_all)))
+testNN$fit.keras <- as.vector(model %>% predict(list(XtestNN, WtestNN)))
+Poisson.Deviance(testNN$fit.keras,testNN$ClaimNb)
+Poisson.Deviance(learnNN$fit.keras,learnNN$ClaimNb)
+
+###DeepNet 2 layers
+
+
+k_clear_session()
+features.0 <- layer_input(shape=c(ncol(XlearnNN)))         # define network for features
+net <- features.0 %>%
+  layer_dense(units = 35, activation = 'tanh') %>% 
+  layer_dense(units=20,activation="tanh") %>% 
+  layer_dense(units = 1, activation = k_exp)
+volumes.0 <- layer_input(shape=c(1))                     # define network for offset
+offset <- volumes.0 %>%
+  layer_dense(units = 1, activation = 'linear', use_bias=FALSE, trainable=FALSE, weights=list(array(1, dim=c(1,1))))
+merged <- list(net, offset) %>%                          # combine the two networks
+  layer_multiply() 
+model <- keras_model(inputs=list(features.0, volumes.0), outputs=merged)    
+summary(model)    
+model %>% compile(loss = 'poisson', optimizer = 'nadam')
+
+
+{t1 <- proc.time()
+  fit <- model %>% fit(list(XlearnNN, WlearnNN), YlearnNN, epochs=150, batch_size=10000,validation_data=list(list(XvalNN,WvalNN),YvalNN))
+  (proc.time()-t1)}
+
 plot(fit)
 
-learnNN$fit.keras <- as.vector(model %>% predict(list(learnNN, learnNN)))
 testNN$fit.keras <- as.vector(model %>% predict(list(XtestNN, WtestNN)))
 Poisson.Deviance(testNN$fit.keras,testNN$ClaimNb)
