@@ -1,0 +1,83 @@
+\documentclass{article}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{amsmath}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+\usepackage[french]{babel}
+\frenchsetup{og=«, fg=»}
+\usepackage{pdfpages}
+
+
+
+\usepackage{graphicx}
+
+\addto\captionsfrench{\def\tablename{Tableau}}
+\addto\captionsfrench{\def\figurename{Graphique}}
+\addto\captionsfrench{\def\abstractname{Faits Saillants}}
+
+\usepackage{geometry}
+\geometry{letterpaper, margin=1in}
+
+\usepackage{url}
+\usepackage{hyperref}
+\definecolor{link}{rgb}{0,0.4,0.6}
+\hypersetup{colorlinks = true,linktocpage = true,linkcolor = link}
+
+
+\usepackage[noae]{Sweave}
+\begin{document}
+
+\renewcommand{\figureautorefname}{Graphique}
+
+\thispagestyle{empty}
+
+\begin{center}
+
+\SweaveOpts{concordance=TRUE,echo=FALSE}
+\vspace{3cm}
+
+\textsc{\Large École d'actuariat}\\
+\textsc{\Large Université Laval}\\[0.5cm]
+
+\vspace{5cm}
+
+{ \LARGE \bfseries Réseau de neurone en Actuariat \\ }
+
+
+\vspace{5cm}
+
+{\LARGE Sous la supervision de \\ }
+{\LARGE Marie-Pier \textsc{Côté} \\}
+
+\vfill
+\Large Nicolas \textsc{Bellemare}\\
+\Large 111 168 082\\
+
+{\Large \textsc{Hiver} 2020}
+
+\end{center}
+
+\newpage
+
+
+
+\tableofcontents
+\newpage
+
+
+
+
+\end{document}
