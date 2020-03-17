@@ -1,4 +1,10 @@
-
+library(tfruns)
+library(keras)
+library(CASdatasets)
+library(tidyverse)
+library(recipes)     # Library for data processing
+library(glue)        # For conveniently concatenating strings
+library(zeallot) 
 # Hyperparameter flags ---------------------------------------------------
 
 FLAGS <- flags(
@@ -15,12 +21,6 @@ FLAGS <- flags(
   flag_numeric("l2",0.01)
 )
 
-##Création d'une fonction de perte sur mesure, on doit utiliser les fonctions de keras, k_**
-Poisson.Deviance <- function(y_true,y_pred){
-  
-  2*(k_mean(y_pred)-k_mean(y_true)+k_mean(k_log(((y_true+k_epsilon())/(y_pred+k_epsilon()))^y_true)))
-  
-}
 
 # Define Model --------------------------------------------------------------
 

@@ -19,18 +19,6 @@ FLAGS <- flags(
 )
 
 
-##Création d'une fonction de perte sur mesure, on doit utiliser les fonctions de keras, k_**
-Poisson.Deviance <- function(y_true,y_pred){
-
-  2*(k_mean(y_pred)-k_mean(y_true)+k_mean(k_log(((y_true+k_epsilon())/(y_pred+k_epsilon()))^y_true)))
-
-}
-
-
-
-
-
-
 # Define Model --------------------------------------------------------------
 
 features.0 <- layer_input(shape=c(ncol(XlearnNN)))         # define network for features
@@ -57,6 +45,7 @@ history <- model %>% fit(list(XlearnNN, WlearnNN),
                          batch_size=FLAGS$batch,
                          callbacks=list(callback_early_stopping(patience=25,restore_best_weights = T,min_delta = 0.00001)))
 
+##meilleure graphique à faire
 plot(history)
 
 score <- model %>% evaluate(
