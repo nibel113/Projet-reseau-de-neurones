@@ -1,5 +1,8 @@
-library(tfruns)
+##Runing best shallow
 
+
+
+library(tfruns)
 library(keras)
 library(CASdatasets)
 library(tidyverse)
@@ -7,7 +10,6 @@ library(recipes)     # Library for data processing
 library(glue)        # For conveniently concatenating strings
 library(zeallot)  
 data("freMTPLfreq")
-
 # Data Preparation ---------------------------------------------------
 
 dat <- freMTPLfreq %>% 
@@ -62,17 +64,63 @@ WvalNN <- as.matrix(val_prepped[,1])
 XtestNN <- as.matrix(test_prepped[,features])
 YtestNN <- as.numeric(as.matrix(test_prepped[,5]))
 WtestNN <- as.matrix(test_prepped[,1])
-runs <- tuning_run("Deep_2hidden_tuning.R", sample = 0.01, 
-                   runs_dir = "Deep2_tuning",
-                   flags = list(
-                     dropout1 = c(0,0.01, 0.1, 0.05),
-                     optimizer= c('rmsprop', 'adam'),
-                     hidden1=c(10,20,30,40,50,100),
-                     hidden2=c(10,20,30,40,50,100),
-                     batch=c(5000,10000),
-                     act=c("relu","tanh"),
-                     epochs=500,
-                     l1=c(0,0.01,0.05,0.1),
-                     l2=c(0,0.01,0.05,0.1)
-                     )
+
+##Référence tfruns et comment créer fonction de perte custom
+library(keras)
+library(CASdatasets)
+library(tidyverse)
+library(recipes)     # Library for data processing
+library(glue)        # For conveniently concatenating strings
+library(zeallot)  
+# Hyperparameter flags ---------------------------------------------------
+
+
+
+
+##Création d'une fonction de perte sur mesure, on doit utiliser les fonctions de keras, k_**
+Poisson.Deviance <- function(y_true,y_pred){
+  
+  2*(k_mean(y_pred)-k_mean(y_true)+k_mean(k_log(((y_true+k_epsilon())/(y_pred+k_epsilon()))^y_true)))
+  
+}
+
+
+
+
+
+
+# Define Model --------------------------------------------------------------
+
+
+features.0 <- layer_input(shape=c(ncol(XlearnNN)))         # define network for features
+net <- features.0 %>%
+  #on ajoute kernel initialize direct dans le dense layer
+  layer_dense(units = 100,activation="relu",kernel_initializer = initializer_he_normal(),kernel_regularizer = regularizer_l1_l2(l1 = 0, l2 = 0.01)) %>% 
+  layer_dropout(0.05) %>% 
+  layer_dense(units = 1, activation = k_exp)
+volumes.0 <- layer_input(shape=c(1))                     # define network for offset
+offset <- volumes.0 %>%
+  layer_dense(units = 1, activation = 'linear', use_bias=FALSE, trainable=FALSE, weights=list(array(1, dim=c(1,1))))
+merged <- list(net, offset) %>%                          # combine the two networks
+  layer_multiply() 
+model <- keras_model(inputs=list(features.0, volumes.0), outputs=merged)
+
+model %>% compile(loss = Poisson.Deviance, optimizer = "adam")
+
+# Training & Evaluation ----------------------------------------------------
+
+history <- model %>% fit(list(XlearnNN, WlearnNN), 
+                         YlearnNN,
+                         validation_data=list(list(XvalNN,WvalNN),YvalNN),
+                         epochs=500, 
+                         batch_size=5000,
+                         callbacks=list(callback_early_stopping(patience=25,restore_best_weights = T,min_delta = 0.00001)))
+
+plot(history)
+
+score <- model %>% evaluate(
+  list(XtestNN,WtestNN), YtestNN,
+  verbose = 0
 )
+
+yfit <- predict(model,list(XtestNN,WtestNN))
