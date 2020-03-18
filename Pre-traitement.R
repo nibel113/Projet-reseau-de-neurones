@@ -42,7 +42,7 @@ rec_obj <- recipe(ClaimNb ~ ., # Throw out id column, but use all other variable
   step_dummy(Power, Gas,Brand,Region,one_hot = T,preserve = F) %>% 
   prep(training = learnNN)
 
-
+  
 # Use recipe to "bake" the final data 
 learn_prepped <- bake(rec_obj, new_data = learnNN) %>% rename(Offset = Exposure) # Bake the recipe
 test_prepped <- bake(rec_obj, new_data = testNN) %>% rename(Offset = Exposure)

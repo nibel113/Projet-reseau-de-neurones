@@ -109,7 +109,7 @@ model %>% compile(loss = Poisson.Deviance, optimizer = "adam")
 
 # Training & Evaluation ----------------------------------------------------
 
-history <- model %>% fit(list(XlearnNN, WlearnNN), 
+model %>% fit(list(XlearnNN, WlearnNN), 
                          YlearnNN,
                          validation_data=list(list(XvalNN,WvalNN),YvalNN),
                          epochs=500, 
