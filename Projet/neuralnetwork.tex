@@ -1,0 +1,13 @@
+\documentclass[10pt]{article}
+\usepackage{neuralnetwork}
+
+\begin{document}
+	\begin{neuralnetwork}[height=4]
+		\newcommand{\nodetexthidden}[2]{$\phi_#2$}
+		\newcommand{\nodetextx}[2]{$x_#2$}
+		\newcommand{\nodetexty}[2]{$y_#2$}
+		\inputlayer[count=3, bias=true, title=Couche\\d'entrée, text=\nodetextx]
+		\hiddenlayer[count=2, bias=true, title=Couche\\cachée, text=\nodetexthidden] \linklayers
+		\outputlayer[count=1, title=Couche\\{de sortie}, text=\nodetexty] \linklayers
+	\end{neuralnetwork}
+\end{document}

@@ -114,7 +114,7 @@ model %>% fit(list(XlearnNN, WlearnNN),
                          validation_data=list(list(XvalNN,WvalNN),YvalNN),
                          epochs=500, 
                          batch_size=5000,
-                         callbacks=list(callback_early_stopping(patience=25,restore_best_weights = T,min_delta = 0.00001)))
+                         callbacks=list(callback_early_stopping(monitor="val_loss",patience=25,restore_best_weights = T,min_delta = 0.00001)))
 
 plot(history)
 
