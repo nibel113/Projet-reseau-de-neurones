@@ -45,7 +45,7 @@ print(p1)
 p2 <- pdp::partial(model, pred.var = "DriverAge", pred.fun = pred_wrapper, 
               train = as.data.frame(list(XlearnNN_plot, WlearnNN_plot))) %>%
   autoplot(alpha = 0.1)
-p3 <- pdp::partial(model, pred.var = "Region_Centre", pred.fun = pred_wrapper, 
+p3 <- pdp::partial(model, pred.var = "Density", pred.fun = pred_wrapper, 
               train = as.data.frame(list(XlearnNN_plot, WlearnNN_plot))) %>%
   autoplot(alpha = 0.1)
 grid.arrange(p2, p3, ncol = 2)

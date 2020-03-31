@@ -5,16 +5,16 @@ library(tidyverse)
 library(recipes)     # Library for data processing
 library(glue)        # For conveniently concatenating strings
 library(zeallot)  
-library(tfruns)
+
 
 source("Pre-traitement.R")
-runs <- tuning_run("Shallow_tuning.R", sample=0.005,
-                   runs_dir = "shallow_tuning",
+runs <- tuning_run("Shallow_tuning.R",sample = 0.25,
+                   runs_dir = "shallow_tuning_select_hidden_10",
                    flags = list(
-                     dropout1 = c(0,0.1,0.05,0.01),
-                     optimizer= c('rmsprop',"adam","nadam"),
-                     hidden1=c(10,20,30,40,50,100),
-                     batch=c(5000,10000),
+                     dropout1 = c(0,0.05,0.1),
+                     optimizer= c("adam"),
+                     hidden1=c(10),
+                     batch=c(10000),
                      act=c("relu"),
                      epochs=500,
                      l1=c(0,0.01,0.05,0.1),
