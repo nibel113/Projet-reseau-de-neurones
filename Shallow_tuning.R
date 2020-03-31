@@ -24,7 +24,8 @@ FLAGS <- flags(
 features.0 <- layer_input(shape=c(ncol(XlearnNN)))         # define network for features
 net <- features.0 %>%
   #on ajoute kernel initialize direct dans le dense layer
-  layer_dense(units = FLAGS$hidden1,activation=FLAGS$act,kernel_initializer = initializer_he_normal(),kernel_regularizer = regularizer_l1_l2(l1 = FLAGS$l1, l2 = FLAGS$l2)) %>% 
+  layer_dense(units = FLAGS$hidden1,activation=FLAGS$act,kernel_initializer = initializer_he_normal(),kernel_regularizer = regularizer_l1_l2(l1 = FLAGS$l1, l2 = FLAGS$l2)) %>%
+  layer_batch_normalization() %>% 
   layer_dropout(FLAGS$dropout1) %>% 
   layer_dense(units = 1, activation = k_exp)
 volumes.0 <- layer_input(shape=c(1))                     # define network for offset
@@ -46,7 +47,12 @@ history <- model %>% fit(list(XlearnNN, WlearnNN),
                          callbacks=list(callback_early_stopping(patience=25,restore_best_weights = T,min_delta = 0.00001)))
 
 ##meilleure graphique à faire
-plot(history)
+data_fit <- as.data.frame(history)
+
+
+ggplot(data_fit,aes(x=epoch,y=value,col=data))+
+  geom_point()+
+  scale_y_continuous(limits = c(0.16,.170))#+
 
 score <- model %>% evaluate(
   list(XtestNN,WtestNN), YtestNN,

@@ -36,5 +36,5 @@ vignettes/*.pdf
 *.knit.md
 
 #tuning runs
-
-/shallow_tuning_poisdeviance/*
+/shallow_tuning/*
+/logs/*

@@ -38,6 +38,7 @@ valNN <- learn[-ll2,]
 
 rec_obj <- recipe(ClaimNb ~ ., # Throw out id column, but use all other variables as predictors
                   data = learnNN %>% select(-PolicyID)) %>% 
+  step_log(Density) %>% 
   step_range(CarAge, DriverAge, Density) %>% # min max
   step_dummy(Power, Gas,Brand,Region,one_hot = T,preserve = F) %>% 
   prep(training = learnNN)
