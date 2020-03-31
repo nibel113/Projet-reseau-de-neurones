@@ -24,7 +24,7 @@ FLAGS <- flags(
 features.0 <- layer_input(shape=c(ncol(XlearnNN)))         # define network for features
 net <- features.0 %>%
   #on ajoute kernel initialize direct dans le dense layer
-  layer_dense(units = FLAGS$hidden1,activation=FLAGS$act,kernel_initializer = initializer_he_normal(),kernel_regularizer = regularizer_l1_l2(l1 = FLAGS$l1, l2 = FLAGS$l2)) %>%
+  layer_dense(units = FLAGS$hidden1,activation=FLAGS$act,kernel_initializer = initializer_he_normal(seed=as.integer(100)),kernel_regularizer = regularizer_l1_l2(l1 = FLAGS$l1, l2 = FLAGS$l2)) %>%
   layer_batch_normalization() %>% 
   layer_dropout(FLAGS$dropout1) %>% 
   layer_dense(units = 1, activation = k_exp)

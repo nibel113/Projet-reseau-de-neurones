@@ -95,7 +95,8 @@ Poisson.Deviance <- function(y_true,y_pred){
 features.0 <- layer_input(shape=c(ncol(XlearnNN)))         # define network for features
 net <- features.0 %>%
   #on ajoute kernel initialize direct dans le dense layer
-  layer_dense(units = 100,activation="relu",kernel_initializer = initializer_he_normal(),kernel_regularizer = regularizer_l1_l2(l1 = 0, l2 = 0.01)) %>% 
+  layer_dense(units = 10,activation="relu",kernel_initializer = initializer_he_normal(seed=as.integer(100)),kernel_regularizer = regularizer_l1_l2(l1 = 0, l2 = 0.01)) %>%
+  layer_batch_normalization() %>% 
   layer_dropout(0.05) %>% 
   layer_dense(units = 1, activation = k_exp)
 volumes.0 <- layer_input(shape=c(1))                     # define network for offset
@@ -111,12 +112,15 @@ model %>% compile(loss = Poisson.Deviance, optimizer = "adam")
 
 model %>% fit(list(XlearnNN, WlearnNN), 
                          YlearnNN,
-                         validation_data=list(list(XvalNN,WvalNN),YvalNN),
-                         epochs=500, 
-                         batch_size=5000,
-                         callbacks=list(callback_early_stopping(monitor="val_loss",patience=25,restore_best_weights = T,min_delta = 0.00001)))
+                         epochs=174, 
+                         batch_size=10000)
 
-plot(history)
+data_fit <- as.data.frame(history)
+
+
+ggplot(data_fit,aes(x=epoch,y=value,col=data))+
+  geom_point()+
+  scale_y_continuous(limits = c(0.25,0.26))#+
 
 score <- model %>% evaluate(
   list(XtestNN,WtestNN), YtestNN,
