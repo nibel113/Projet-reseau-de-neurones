@@ -31,6 +31,8 @@ net <- features.0 %>%
   layer_batch_normalization() %>%
   layer_dropout(FLAGS$dropout1) %>% 
   layer_dense(units = FLAGS$hidden2,activation=FLAGS$act,kernel_initializer = initializer_he_normal(),kernel_regularizer = regularizer_l1_l2(l1 = FLAGS$l1, l2 = FLAGS$l2)) %>% 
+  layer_batch_normalization() %>%
+  layer_dropout(FLAGS$dropout1) %>% 
   layer_dense(units = 1, activation = k_exp)
 volumes.0 <- layer_input(shape=c(1))                     # define network for offset
 offset <- volumes.0 %>%
@@ -49,10 +51,15 @@ history <- model %>% fit(list(XlearnNN, WlearnNN),
                          epochs=FLAGS$epochs, 
                          batch_size=FLAGS$batch,
                          callbacks=list(
-                           callback_early_stopping(patience=25,restore_best_weights = T,min_delta = 0.00001))
+                           callback_early_stopping(patience=15,restore_best_weights = T,min_delta = 0.00001),
+                           callback_reduce_lr_on_plateau(factor = 0.05))
                          )
 
-plot(history)
+data_fit <- as.data.frame(history)
+
+
+ggplot(data_fit[which(!is.na(data_fit$value)),],aes(x=epoch,y=value,col=data))+
+  geom_point()
 
 score <- model %>% evaluate(
   list(XtestNN,WtestNN), YtestNN,
