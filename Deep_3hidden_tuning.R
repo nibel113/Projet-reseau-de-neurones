@@ -1,9 +1,4 @@
-library(keras)
-library(CASdatasets)
-library(tidyverse)
-library(recipes)     # Library for data processing
-library(glue)        # For conveniently concatenating strings
-library(zeallot)  
+
 # Hyperparameter flags ---------------------------------------------------
 
 FLAGS <- flags(
@@ -17,7 +12,6 @@ FLAGS <- flags(
   flag_integer("batch",10000),
   flag_string("act","relu"),
   flag_string("epochs",500),
-  flag_numeric("lr_annealing", 0.1),
   flag_numeric("l1",0.01),
   flag_numeric("l2",0.01)
 )
@@ -45,7 +39,7 @@ merged <- list(net, offset) %>%                          # combine the two netwo
   layer_multiply() 
 model <- keras_model(inputs=list(features.0, volumes.0), outputs=merged)
 
-model %>% compile(loss = Poisson.Deviance(), optimizer = FLAGS$optimizer)
+model %>% compile(loss = Poisson.Deviance, optimizer = FLAGS$optimizer)
 
 # Training & Evaluation ----------------------------------------------------
 
@@ -55,11 +49,15 @@ history <- model %>% fit(list(XlearnNN, WlearnNN),
                          epochs=FLAGS$epochs, 
                          batch_size=FLAGS$batch,
                          callbacks=list(
-                           callback_early_stopping(patience=25,restore_best_weights = T,min_delta = 0.00001),
-                           callback_reduce_lr_on_plateau(factor = FLAGS$lr_annealing))
+                           callback_early_stopping(patience=15,restore_best_weights = T),
+                           callback_reduce_lr_on_plateau(patience=5))
 )
 
-plot(history)
+data_fit <- as.data.frame(history)
+
+
+ggplot(data_fit[which(!is.na(data_fit$value)),],aes(x=epoch,y=value,col=data))+
+  geom_point()
 
 score <- model %>% evaluate(
   list(XtestNN,WtestNN), YtestNN,

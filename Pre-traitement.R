@@ -5,12 +5,12 @@ library(CASdatasets)
 library(tidyverse)
 library(recipes)     # Library for data processing
 library(glue)        # For conveniently concatenating strings
-library(zeallot) 
+library(zeallot)
 data("freMTPLfreq")
 
-dat <- freMTPLfreq %>% 
-  as_tibble() %>% 
-  mutate_at(vars(Power, Gas,Brand,Region), factor) %>% 
+dat <- freMTPLfreq %>%
+  as_tibble() %>%
+  mutate_at(vars(Power, Gas, Brand, Region), factor) %>%
   mutate(Exposure = if_else(Exposure > 1, 1, Exposure))
 
 
@@ -36,11 +36,17 @@ ll2 <- c(ll2,sample(which(learn$ClaimNb==4), round(0.75*length(which(learn$Claim
 learnNN <- learn[ll2,]
 valNN <- learn[-ll2,]
 
-rec_obj <- recipe(ClaimNb ~ ., # Throw out id column, but use all other variables as predictors
-                  data = learnNN %>% select(-PolicyID)) %>% 
-  step_log(Density) %>% 
+rec_obj <-
+  recipe(ClaimNb ~ ., # Throw out id column, but use all other variables as predictors
+         data = learnNN %>% select(-PolicyID)) %>%
+  step_log(Density) %>%
   step_range(CarAge, DriverAge, Density) %>% # min max
-  step_dummy(Power, Gas,Brand,Region,one_hot = T,preserve = F) %>% 
+  step_dummy(Power,
+             Gas,
+             Brand,
+             Region,
+             one_hot = T,
+             preserve = F) %>%
   prep(training = learnNN)
 
   
@@ -66,7 +72,7 @@ WtestNN <- as.matrix(test_prepped[,1])
 ##Création d'une fonction de perte sur mesure, on doit utiliser les fonctions de keras, k_**
 Poisson.Deviance <- function(y_true,y_pred){
   
-  2*(k_mean(y_pred)-k_mean(y_true)+k_mean(k_log(((y_true+k_epsilon())/(y_pred+k_epsilon()))^y_true)))
+  2*(k_mean(y_pred) - k_mean(y_true) +k_mean(k_log(((y_true + k_epsilon()) / (y_pred + k_epsilon())) ^ y_true)))
   
 }
 

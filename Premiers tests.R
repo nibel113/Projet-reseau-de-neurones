@@ -29,6 +29,16 @@ test <- dat[-ll,]
 (n_l <- nrow(learn))
 (n_t <- nrow(test))
 
+ll2 <- sample(which(learn$ClaimNb==0), round(0.75*length(which(learn$ClaimNb==0))), replace = FALSE)
+ll2 <- c(ll2,sample(which(learn$ClaimNb==1), round(0.75*length(which(learn$ClaimNb==1))), replace = FALSE))
+ll2 <- c(ll2,sample(which(learn$ClaimNb==2), round(0.75*length(which(learn$ClaimNb==2))), replace = FALSE))
+ll2 <- c(ll2,sample(which(learn$ClaimNb==3), round(0.75*length(which(learn$ClaimNb==3))), replace = FALSE))
+ll2 <- c(ll2,sample(which(learn$ClaimNb==4), round(0.75*length(which(learn$ClaimNb==4))), replace = FALSE))
+
+
+learnNN <- learn[ll2,]
+valNN <- learn[-ll2,]
+
 prop.table(table(dat$ClaimNb))
 prop.table(table(learn$ClaimNb))
 prop.table(table(test$ClaimNb))
@@ -38,13 +48,13 @@ prop.table(table(test$ClaimNb))
 ## glm poisson de base pas de sélection de variable 
 
 
-glm1 <- glm(ClaimNb~ Power + CarAge + DriverAge + Brand + Gas + Region + I(log(Density))+ offset(log(Exposure)),data=learn,family="poisson")
+glm1 <- glm(ClaimNb~ Power + CarAge + DriverAge + Brand + Gas + Region + I(log(Density))+ offset(log(Exposure)),data=learnNN,family="poisson")
 
-learn$fit <- fitted(glm1)
+learnNN$fit <- fitted(glm1)
 test$fit <- predict(glm1,newdata=test,type="response")
 
 names <- "glm1"
-in_loss<- Poisson.Deviance(learn$fit,learn$ClaimNb)
+in_loss<- Poisson.Deviance(learnNN$fit,learnNN$ClaimNb)
 out_loss <- Poisson.Deviance(test$fit,test$ClaimNb)
 
 
