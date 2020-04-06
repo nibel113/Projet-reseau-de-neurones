@@ -2,17 +2,17 @@
 # Hyperparameter flags ---------------------------------------------------
 
 FLAGS <- flags(
-  flag_numeric("dropout1", 0.4),
-  flag_string("optimizer","rmsprop"),
-  flag_integer("hidden1",20),
-  flag_integer("hidden2",20),
-  flag_integer("hidden3",20),
-  flag_integer("hidden4",20),
-  flag_integer("batch",10000),
+  flag_numeric("dropout1", 0.5),
+  flag_string("optimizer","nadam"),
+  flag_integer("hidden1",32),
+  flag_integer("hidden2",64),
+  flag_integer("hidden3",128),
+  flag_integer("hidden4",16),
+  flag_integer("batch",8192),
   flag_string("act","relu"),
-  flag_string("epochs",500),
-  flag_numeric("l1",0.01),
-  flag_numeric("l2",0.01)
+  flag_string("epochs",5000),
+  flag_numeric("l1",0),
+  flag_numeric("l2",0)
   )
 
 
@@ -65,7 +65,8 @@ data_fit <- as.data.frame(history)
 
 
 ggplot(data_fit[which(!is.na(data_fit$value)),],aes(x=epoch,y=value,col=data))+
-  geom_point()
+  geom_point()+
+  scale_y_continuous(limits=c(0.2510,.26))
 
 score <- model %>% evaluate(
   list(XtestNN,WtestNN), YtestNN,
