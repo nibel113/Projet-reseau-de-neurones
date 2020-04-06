@@ -23,17 +23,18 @@ source("Pre-traitement.R")
 #                     )
 #)
 
-runs <- tuning_run("Deep_2hidden_tuning.R", sample = 0.1, 
+runs <- tuning_run("Deep_2hidden_tuning.R", sample=0.2,
                    runs_dir = "Deep2_tuning",
                    flags = list(
-                     dropout1 = c(0, 0.1, 0.25),
-                     optimizer= c('rmsprop', 'adam',"nadam"),
-                     hidden1=c(30),
-                     hidden2=c(10),
-                     batch=c(5000,10000),
-                     act=c("relu"),
-                     epochs=500,
-                     l1=c(0,0.01,0.05,0.1),
-                     l2=c(0,0.01,0.05,0.1)
+                     dropout1 = c(0,0.5),
+                     dropout2 = c(0,0.5),
+                     #optimizer= c("nadam"),
+                     hidden1=c(16,32,64,128,256),
+                     hidden2=c(16,32,64,128)#,
+                     #batch=c(8192),
+                     #act=c("relu"),
+                     #epochs=15#,
+                     #l1=c(0),
+                     #l2=c(0)
                    )
 )

@@ -1,7 +1,6 @@
 ##Prétraitements des données
 library(CASdatasets)
 library(keras)
-library(CASdatasets)
 library(tidyverse)
 library(recipes)     # Library for data processing
 library(glue)        # For conveniently concatenating strings
@@ -23,7 +22,7 @@ ll <- c(ll,sample(which(dat$ClaimNb==3), round(0.8*length(which(dat$ClaimNb==3))
 ll <- c(ll,sample(which(dat$ClaimNb==4), round(0.8*length(which(dat$ClaimNb==4))), replace = FALSE))
 
 ## on remet l'ordre aléatoire
-ll <- sample(ll,size=length(ll))
+ll <- sample(ll,size=length(ll),replace = F)
 
 ## création test et entrainement
 learn <- dat[ll,]
@@ -38,7 +37,7 @@ ll2 <- c(ll2,sample(which(learn$ClaimNb==3), round(0.75*length(which(learn$Claim
 ll2 <- c(ll2,sample(which(learn$ClaimNb==4), round(0.75*length(which(learn$ClaimNb==4))), replace = FALSE))
 
 ## on remet l'indiçage aléatoire
-ll2 <- sample(ll2,size=length(ll2))
+ll2 <- sample(ll2,size=length(ll2),replace = F)
 learnNN <- learn[ll2,]
 valNN <- learn[-ll2,]
 

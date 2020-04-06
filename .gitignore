@@ -41,3 +41,4 @@ vignettes/*.pdf
 
 #Dossier 
 /fichiers tests début du projet/*
+.Rproj.user
