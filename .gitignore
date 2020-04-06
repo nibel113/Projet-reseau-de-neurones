@@ -38,3 +38,6 @@ vignettes/*.pdf
 #tuning runs
 /shallow_tuning/*
 /logs/*
+
+#Dossier 
+/fichiers tests début du projet/*

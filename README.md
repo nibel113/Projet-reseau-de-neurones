@@ -1,3 +1,0 @@
-﻿# Projet réseau de neurone
-
-
