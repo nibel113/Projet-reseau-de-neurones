@@ -37,8 +37,8 @@ vignettes/*.pdf
 
 #tuning runs
 /shallow_tuning/*
-/logs/*
+
 
 #Dossier 
-/fichiers tests début du projet/*
+fichiers tests début du projet/**
 .Rproj.user

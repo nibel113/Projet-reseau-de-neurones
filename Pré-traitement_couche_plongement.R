@@ -1,7 +1,3 @@
-###############################################
-#########  neural network (with embeddings)
-###############################################
-
 ##Prétraitements des données
 library(CASdatasets)
 library(keras)
@@ -85,82 +81,12 @@ Yval <- as.matrix(val_prepped$ClaimNb)
 Vlearn <- as.matrix(log(learn_prepped$Offset))
 Vtest <- as.matrix(log(test_prepped$Offset))
 Vval <- as.matrix(log(val_prepped$Offset))
+
+
 lambda.hom <- sum(learn_prepped$ClaimNb)/sum(learn_prepped$Offset)
-
-CANN <- 0  # 0=Embedding NN, 1=CANN
-
-if (CANN==1){
-  Vlearn <- as.matrix(log(learn$fitGLM2))
-  Vtest <- as.matrix(log(test$fitGLM2))
-  lambda.hom <- sum(learn$ClaimNb)/sum(learn$fitGLM2)
-}
-lambda.hom
-
-# hyperparameters of the neural network architecture
-BrLabel <- length(unique(learn_prepped$Brand))
-ReLabel <- length(unique(learn_prepped$Region))
-
-d <- 2         # dimensions embedding layers for categorical features
-# define the network architecture
-Design   <- layer_input(shape = c(ncol(Xlearn)),  dtype = 'float32', name = 'Design')
-Brand <- layer_input(shape = c(1),   dtype = 'int32', name = 'Brand')
-Region   <- layer_input(shape = c(1),   dtype = 'int32', name = 'Region')
-LogVol   <- layer_input(shape = c(1),   dtype = 'float32', name = 'LogVol')
-#
-BrandEmb = Brand %>% 
-  layer_embedding(input_dim = BrLabel, output_dim = d, input_length = 1, name = 'BrandEmb') %>%
-  layer_flatten(name='Brand_flat')
-
-RegionEmb = Region %>% 
-  layer_embedding(input_dim = ReLabel, output_dim = d, input_length = 1, name = 'RegionEmb') %>%
-  layer_flatten(name='Region_flat')
-
-
-
-Network = list(Design, BrandEmb, RegionEmb) %>% layer_concatenate(name='concate') %>% 
-  layer_dense(units=32, activation='relu', name='hidden1') %>%
-  layer_dense(units=128, activation='relu', name='hidden2') %>%
-  layer_dense(units=64, activation='relu', name='hidden3') %>%
-  layer_dense(units=16, activation='relu', name='hidden4') %>%
-  layer_dense(units=1, activation='linear', name='Network', 
-              weights=list(array(0, dim=c(16,1)), array(log(lambda.hom), dim=c(1))))
-
-Response = list(Network, LogVol) %>% layer_add(name='Add') %>% 
-  layer_dense(units=1, activation=k_exp, name = 'Response', trainable=FALSE,
-              weights=list(array(1, dim=c(1,1)), array(0, dim=c(1))))
-
-
-model <- keras_model(inputs = c(Design, Brand, Region, LogVol), outputs = c(Response))
 
 Poisson.Deviance <- function(y_true,y_pred){
   
   2*(k_mean(y_pred) - k_mean(y_true) +k_mean(k_log(((y_true + k_epsilon()) / (y_pred + k_epsilon())) ^ y_true)))
   
 }
-
-model %>% compile(optimizer = "nadam", loss = Poisson.Deviance)
-
-
-history <- model %>% fit(list(Xlearn, Brlearn, Relearn, Vlearn), 
-                         Ylearn,
-                         validation_data=list(list(Xval, Brval, Reval, Vval),Yval),
-                         epochs=100, 
-                         batch_size=8192,
-                         callbacks=list(
-                           callback_early_stopping(patience=10),
-                           callback_reduce_lr_on_plateau(factor=0.05)
-                           )
-)
-
-
-data_fit <- as.data.frame(history)
-
-
-ggplot(data_fit[which(!is.na(data_fit$value)),],aes(x=epoch,y=value,col=data))+
-  geom_point()
-
-score <- model %>% evaluate(
-  list(Xtest, Brtest, Retest, Vtest), 
-  Ytest,
-  verbose = 0
-)

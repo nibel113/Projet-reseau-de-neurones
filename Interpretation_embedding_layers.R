@@ -27,29 +27,42 @@ ll <- sample(1:nrow(dat),1000,replace = F)
 
 ## On crée un data.frame pour les features
 feature_ind <- 4:10
-Xplot<- dat[ll,feature_ind]
+learn <- dat[ll,feature_ind]
 ## on crée un vecteur de réponse
-Yplot <- dat[ll,2]
+YlearnNN_plot <- dat[ll,2]
 
-response <- as.vector(Yplot)
+response <- as.vector(YlearnNN_plot)
 colnames(response) <- "response"
 ## on crée une fonction sur mesure pour retourner
 ## les valeurs pr?dites du modèles
 
 pred <- function(object, newdata)  {
   ## on fixe l'exposure à 1, pour l'interprétation
-  features_ind <- c(2:5,7:22)
   newdata$Exposure <- 1
   newdata$ClaimNb <- 1
+  ##recette
+  rec_obj <-
+    recipe(ClaimNb ~ ., # Throw out id column, but use all other variables as predictors
+           data = learnNN %>% select(-PolicyID)) %>%
+    step_log(Density) %>%
+    step_range(CarAge, DriverAge, Density,Power) %>% # min max
+    step_dummy(Gas,
+               one_hot = F,
+               preserve = F) %>% 
+    step_integer(Region,Brand,zero_based = T) %>% 
+    prep(training = learnNN)
+  
   learn_prepped <- bake(rec_obj, new_data = newdata) %>% rename(Offset = Exposure)
-  X <- as.matrix(learn_prepped[,features_ind])
-  results <- as.vector(predict(object, list(X,matrix(1,nrow=nrow(newdata)))))
+  X<- as.matrix(learn_prepped[, c(2,3,4,7,9)])  # design matrix learning sample
+  Br <- as.matrix(learn_prepped$Brand)
+  Re <- as.matrix(learn_prepped$Region)
+  results <- as.vector(predict(object, list(X, Br, Re, matrix(1,nrow = nrow(newdata)))))
   return(results)
 }
 
 components_iml <- Predictor$new(
   model = model,
-  data = Xplot,
+  data = learn,
   y = response,
   predict.fun = pred
 )
@@ -66,7 +79,7 @@ imp$results
 
 ## Partial dependance plot
 pdp.driverage <- FeatureEffect$new(components_iml, "DriverAge", method = "pdp",
-                  grid.size = 100)
+                                   grid.size = 100)
 
 plot(pdp.driverage)
 
@@ -75,23 +88,23 @@ pdp.power <- FeatureEffect$new(components_iml, "Power", method = "pdp",
 plot(pdp.power)
 
 pdp.carage <- FeatureEffect$new(components_iml, "CarAge", method = "pdp",
-                          grid.size = 50)
+                                grid.size = 50)
 plot(pdp.carage)
 
 pdp.brand <- FeatureEffect$new(components_iml, "Brand", method = "pdp",
-                          grid.size = 50)
+                               grid.size = 50)
 plot(pdp.brand)+coord_flip()
 
 pdp.gas <- FeatureEffect$new(components_iml, "Gas", method = "pdp",
-                          grid.size = 50)
+                             grid.size = 50)
 plot(pdp.gas)
 
 pdp.region <- FeatureEffect$new(components_iml, "Region", method = "pdp",
-                          grid.size = 50)
+                                grid.size = 50)
 plot(pdp.region)+coord_flip()
 
 pdp.density <- FeatureEffect$new(components_iml, "Density", method = "pdp",
-                          grid.size = 50)
+                                 grid.size = 50)
 plot(pdp.density)
 
 
@@ -99,7 +112,7 @@ plot(pdp.density)
 ice.driverage <- FeatureEffect$new(components_iml, "DriverAge", method = "ice",
                                    grid.size = 50)
 
-plot(ice.driverage)
+plot(ice.driverage)+ggtitle("shallow_embed_512")
 
 ice.power <- FeatureEffect$new(components_iml, "Power", method = "ice",
                                grid.size = 50)
@@ -161,9 +174,14 @@ interaction_pdp.driver.brand <- FeatureEffect$new(components_iml,
                                                   method = "pdp", grid.size=30)
 plot(interaction_pdp.driver.brand)
 
+interaction_pdp.driver.density <- FeatureEffect$new(components_iml, 
+                                                  feature = c("DriverAge","Density"),
+                                                  method = "pdp", grid.size=30)
+plot(interaction_pdp.driver.density)
+
 interaction_pdp.driver.region <- FeatureEffect$new(components_iml,
-                                                    feature=c("DriverAge","Region"),
-                                                    method="pdp",grid.size=30)
+                                                   feature=c("DriverAge","Region"),
+                                                   method="pdp",grid.size=30)
 plot(interaction_pdp.driver.region)
 
 inter_pdp.brand.power<- FeatureEffect$new(components_iml,

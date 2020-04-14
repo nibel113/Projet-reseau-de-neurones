@@ -9,7 +9,8 @@ data("freMTPLfreq")
 
 dat <- freMTPLfreq %>%
   as_tibble() %>%
-  mutate_at(vars(Power, Gas, Brand, Region), factor) %>%
+  mutate_at(vars(Gas, Brand, Region), factor) %>%
+  mutate_at(vars(Power),as.integer) %>% 
   mutate(Exposure = if_else(Exposure > 1, 1, Exposure))
 
 
@@ -30,6 +31,7 @@ testNN <- dat[-ll,]
 
 
 ##Défintion des indices pour l'échantillon de validation
+set.seed(200)
 ll2 <- sample(which(learn$ClaimNb==0), round(0.75*length(which(learn$ClaimNb==0))), replace = FALSE)
 ll2 <- c(ll2,sample(which(learn$ClaimNb==1), round(0.75*length(which(learn$ClaimNb==1))), replace = FALSE))
 ll2 <- c(ll2,sample(which(learn$ClaimNb==2), round(0.75*length(which(learn$ClaimNb==2))), replace = FALSE))
@@ -45,12 +47,11 @@ rec_obj <-
   recipe(ClaimNb ~ ., # Throw out id column, but use all other variables as predictors
          data = learnNN %>% select(-PolicyID)) %>%
   step_log(Density) %>%
-  step_range(CarAge, DriverAge, Density) %>% # min max
-  step_dummy(Power,
-             Gas,
+  step_range(CarAge, DriverAge, Density,Power) %>% # min max
+  step_dummy(Gas,
              Brand,
              Region,
-             one_hot = T,
+             one_hot = F,
              preserve = F) %>%
   prep(training = learnNN)
 
@@ -60,26 +61,23 @@ learn_prepped <- bake(rec_obj, new_data = learnNN) %>% rename(Offset = Exposure)
 test_prepped <- bake(rec_obj, new_data = testNN) %>% rename(Offset = Exposure)
 val_prepped <- bake(rec_obj, new_data = valNN) %>% rename(Offset=Exposure)
 
-features <- c(2:4,6:36)
+features <- c(2:5,7:22)
 XlearnNN <- as.matrix(learn_prepped[,features])
-YlearnNN <- as.numeric(as.matrix(learn_prepped[,5]))
-WlearnNN <- as.matrix(learn_prepped[,1])
+YlearnNN <- as.numeric(as.matrix(learn_prepped[,6]))
+WlearnNN <- as.matrix(log(learn_prepped[,1]))
 
 XvalNN <- as.matrix(val_prepped[,features])
-YvalNN <- as.numeric(as.matrix(val_prepped[,5]))
-WvalNN <- as.matrix(val_prepped[,1])
+YvalNN <- as.numeric(as.matrix(val_prepped[,6]))
+WvalNN <- as.matrix(log(val_prepped[,1]))
 
 XtestNN <- as.matrix(test_prepped[,features])
-YtestNN <- as.numeric(as.matrix(test_prepped[,5]))
-WtestNN <- as.matrix(test_prepped[,1])
+YtestNN <- as.numeric(as.matrix(test_prepped[,6]))
+WtestNN <- as.matrix(log(test_prepped[,1]))
 
 
 ##Création d'une fonction de perte sur mesure, on doit utiliser les fonctions de keras, k_**
 Poisson.Deviance <- function(y_true,y_pred){
   
-  2*(k_mean(y_pred) - k_mean(y_true) +k_mean(k_log(((y_true + k_epsilon()) / (y_pred + k_epsilon())) ^ y_true)))
+  2*k_mean( y_pred - y_true + k_log( ( y_true + k_epsilon() ) / ( y_pred + k_epsilon() ) ) * y_true, axis = -1)
   
 }
-
-
-

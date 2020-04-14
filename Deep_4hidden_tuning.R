@@ -3,17 +3,22 @@
 
 FLAGS <- flags(
   flag_numeric("dropout1", 0.5),
-  flag_string("optimizer","nadam"),
-  flag_integer("hidden1",32),
+  flag_numeric("dropout2", 0),
+  flag_numeric("dropout3", 0.5),
+  flag_integer("hidden1",128),
   flag_integer("hidden2",64),
-  flag_integer("hidden3",128),
+  flag_integer("hidden3",16),
   flag_integer("hidden4",16),
-  flag_integer("batch",8192),
-  flag_string("act","relu"),
-  flag_string("epochs",5000),
-  flag_numeric("l1",0),
-  flag_numeric("l2",0)
-  )
+  flag_numeric("l1_1",0),
+  flag_numeric("l2_1",0),
+  flag_numeric("l1_2",0),
+  flag_numeric("l2_2",0),
+  flag_numeric("l1_3",0),
+  flag_numeric("l2_3",0),
+  flag_numeric("l1_4",0),
+  flag_numeric("l2_4",0)
+)
+lambda.hom <- sum(learnNN$ClaimNb)/sum(learnNN$Exposure)
 
 
 
@@ -22,51 +27,52 @@ FLAGS <- flags(
 features.0 <- layer_input(shape=c(ncol(XlearnNN)))         # define network for features
 net <- features.0 %>%
   #on ajoute kernel initialize direct dans le dense layer
-  layer_dense(units = FLAGS$hidden1,activation=FLAGS$act,kernel_initializer = initializer_he_normal(seed = 1L),
-              kernel_regularizer = regularizer_l1_l2(l1 = FLAGS$l1, l2 = FLAGS$l2)) %>% 
+  layer_dense(units = FLAGS$hidden1,activation="relu",kernel_initializer = initializer_he_normal(seed = 1L),
+              kernel_regularizer = regularizer_l1_l2(l1 = FLAGS$l1_1, l2 = FLAGS$l2_1)) %>% 
   layer_batch_normalization() %>%
   layer_dropout(FLAGS$dropout1) %>% 
-  layer_dense(units = FLAGS$hidden2,activation=FLAGS$act,kernel_initializer = initializer_he_normal(seed = 2L),
-              kernel_regularizer = regularizer_l1_l2(l1 = FLAGS$l1, l2 = FLAGS$l2)) %>% 
+  layer_dense(units = FLAGS$hidden2,activation="relu",kernel_initializer = initializer_he_normal(seed = 2L),
+              kernel_regularizer = regularizer_l1_l2(l1 = FLAGS$l1_2, l2 = FLAGS$l2_2)) %>% 
   layer_batch_normalization() %>%
-  layer_dropout(FLAGS$dropout1) %>% 
-  layer_dense(units = FLAGS$hidden3,activation=FLAGS$act,kernel_initializer = initializer_he_normal(seed = 3L),
-              kernel_regularizer = regularizer_l1_l2(l1 = FLAGS$l1, l2 = FLAGS$l2)) %>% 
+  layer_dropout(FLAGS$dropout2) %>% 
+  layer_dense(units = FLAGS$hidden3,activation="relu",kernel_initializer = initializer_he_normal(seed = 3L),
+              kernel_regularizer = regularizer_l1_l2(l1 = FLAGS$l1_3, l2 = FLAGS$l2_3)) %>% 
   layer_batch_normalization() %>%
-  layer_dense(units = FLAGS$hidden4,activation=FLAGS$act,kernel_initializer = initializer_he_normal(seed = 4L),
-              kernel_regularizer = regularizer_l1_l2(l1 = FLAGS$l1, l2 = FLAGS$l2)) %>% 
-  layer_dense(units = 1, activation = k_exp,kernel_initializer = initializer_he_normal(seed = 5L))
+  layer_dropout(FLAGS$dropout3) %>% 
+  layer_dense(units = FLAGS$hidden4,activation="relu",kernel_initializer = initializer_he_normal(seed = 4L),
+              kernel_regularizer = regularizer_l1_l2(l1 = FLAGS$l1_4, l2 = FLAGS$l2_4)) %>% 
+  layer_batch_normalization() %>% 
+  layer_dense(units=1, activation='linear', 
+              weights=list(array(0, dim=c(FLAGS$hidden4,1)), array(log(lambda.hom), dim=c(1))))
 
 volumes.0 <- layer_input(shape=c(1))                     # define network for offset
 
-offset <- volumes.0 %>%
-  layer_dense(units = 1, activation = 'linear', use_bias=FALSE, trainable=FALSE, weights=list(array(1, dim=c(1,1))))
-
-merged <- list(net, offset) %>%                          # combine the two networks
-  layer_multiply() 
+merged <- list(net, volumes.0) %>%                          # combine the two networks
+  layer_add() %>% 
+  layer_dense(units=1, activation=k_exp, trainable=FALSE,
+              weights=list(array(1, dim=c(1,1)), array(0, dim=c(1)))) 
 
 model <- keras_model(inputs=list(features.0, volumes.0), outputs=merged)
 
-model %>% compile(loss = Poisson.Deviance, optimizer = FLAGS$optimizer)
+model %>% compile(loss = Poisson.Deviance, optimizer = "nadam")
 
 # Training & Evaluation ----------------------------------------------------
 
 history <- model %>% fit(list(XlearnNN, WlearnNN), 
                          YlearnNN,
                          validation_data=list(list(XvalNN,WvalNN),YvalNN),
-                         epochs=FLAGS$epochs, 
-                         batch_size=FLAGS$batch,
+                         epochs=1000, 
+                         batch_size=8192,
                          callbacks=list(
-                           callback_early_stopping(patience=25,restore_best_weights = T,min_delta = 0.00001),
-                           callback_tensorboard(log_dir = "tf_dir"))
+                           callback_early_stopping(patience=5),
+                           callback_reduce_lr_on_plateau(factor = 0.05))
 )
 
 data_fit <- as.data.frame(history)
 
 
 ggplot(data_fit[which(!is.na(data_fit$value)),],aes(x=epoch,y=value,col=data))+
-  geom_point()+
-  scale_y_continuous(limits=c(0.2510,.26))
+  geom_point()
 
 score <- model %>% evaluate(
   list(XtestNN,WtestNN), YtestNN,

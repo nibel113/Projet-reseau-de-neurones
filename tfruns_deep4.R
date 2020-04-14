@@ -12,24 +12,74 @@ source("Pre-traitement.R")
 
 runs <- tuning_run(
   "Deep_4hidden_tuning.R",
-  sample = 0.5,
-  runs_dir = "Deep4_tuning_numb_neurone",
+  sample = 0.02,
+  runs_dir = "Deep4_tuning_nb_neurone",
   flags = list(
-    dropout1 = c(.5),
-    #dropout2 = c(0.01, 0.1, 0.05),
-    #dropout3 = c(0.01, 0.1, 0.05),
-    #dropout4 = c(0.01, 0.1, 0.05),
-    optimizer = c('nadam'),
-    hidden1 = c(32),
-    hidden2 = c(64),
-    hidden3 = c(128),
-    hidden4 = c(16),
-    batch = c(8192),
-    act = c("relu"),
-    epochs = 500,
-    l1 = c(0,0.01,0.05,0.1),
-    l2 = c(0,0.01,0.05,0.1)
+    dropout1 = c(0),
+    dropout2 = c(0),
+    dropout3 = c(0),
+    hidden1 = c(16,32,64,128,256),
+    hidden2 = c(16,32,64,128,256),
+    hidden3 = c(16,32,64,128,256),
+    hidden4 = c(16,32,64,128,256),
+    l1_1=c(0),
+    l2_1=c(0),
+    l1_2=c(0),
+    l2_2=c(0),
+    l1_3=c(0),
+    l2_3=c(0),
+    l1_4=c(0),
+    l2_4=c(0)
   )
 )
 
+View(ls_runs(runs_dir = "Deep4_tuning_nb_neurone"))
 
+runs <- tuning_run(
+  "Deep_4hidden_tuning.R",
+  runs_dir = "Deep4_tuning_128_64_16_16",
+  flags = list(
+    dropout1 = c(0,0.5),
+    dropout2 = c(0,0.5),
+    dropout3 = c(0,0.5),
+    hidden1 = c(128),
+    hidden2 = c(64),
+    hidden3 = c(16),
+    hidden4 = c(16),
+    l1_1=c(0),
+    l2_1=c(0),
+    l1_2=c(0),
+    l2_2=c(0),
+    l1_3=c(0),
+    l2_3=c(0),
+    l1_4=c(0),
+    l2_4=c(0)
+  )
+)
+
+View(ls_runs(runs_dir = "Deep4_tuning_128_64_16_16"))
+
+
+runs <- tuning_run(
+  "Deep_4hidden_tuning.R",
+  runs_dir = "Deep4_tuning_128_64_16_16_l2",
+  flags = list(
+    dropout1 = c(0.5),
+    dropout2 = c(0),
+    dropout3 = c(0.5),
+    hidden1 = c(128),
+    hidden2 = c(64),
+    hidden3 = c(16),
+    hidden4 = c(16),
+    l1_1=c(0),
+    l2_1=c(0,0.0001),
+    l1_2=c(0),
+    l2_2=c(0,0.0001),
+    l1_3=c(0),
+    l2_3=c(0),
+    l1_4=c(0),
+    l2_4=c(0)
+  )
+)
+
+View(ls_runs(runs_dir = "Deep4_tuning_128_64_16_16_l2"))
