@@ -1,15 +1,22 @@
 
-dat <- freMTPLfreq
+source("Pre-traitement_glm.R")
+
+library(MASS)
+
+## déviance de poisson pour tester l'erreur sur les données test
 
 Poisson.Deviance.glm <- function(pred, obs){
   2*(sum(pred)-sum(obs)+sum(log((obs/pred)^(obs))))/length(pred)
 }
 
-glm1 <- glm(ClaimNb~ Power + CarAge + DriverAge + Brand + Gas + Region + I(log(Density))+ offset(log(Exposure)),data=learnNN,family="poisson")
+## Modèle qui suit un binomiale négative 
+modnb2 <- glm.nb(ClaimNb~ Power + CarAge + DriverAge + Brand + Gas  + I(log(Density))+offset(log(Exposure)),data=learnglm)
 
-learnNN$fit <- fitted(glm1)
-testNN$fit <- predict(glm1,newdata=testNN,type="response")
 
-names <- "glm1"
-in_loss<- Poisson.Deviance.glm(learnNN$fit,learnNN$ClaimNb)
-out_loss <- Poisson.Deviance.glm(testNN$fit,testNN$ClaimNb)
+
+learnglm$fit <- fitted(modnb2)
+testglm$fit <- predict(modnb2,newdata=testglm,type = "response")
+valglm$fit <- predict(modnb2,newdata = valglm,type="response")
+in_loss_glm<- Poisson.Deviance.glm(learnglm$fit,learnglm$ClaimNb)
+out_loss_glm <- Poisson.Deviance.glm(testglm$fit,testglm$ClaimNb)
+

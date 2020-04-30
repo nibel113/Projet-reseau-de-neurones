@@ -1,0 +1,8 @@
+{
+  "dropout1": 0,
+  "dropout2": 0,
+  "hidden1": 32,
+  "hidden2": 128,
+  "l1": 0,
+  "l2": 0
+}

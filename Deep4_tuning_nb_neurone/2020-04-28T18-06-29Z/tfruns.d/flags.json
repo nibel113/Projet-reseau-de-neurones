@@ -1,0 +1,11 @@
+{
+  "dropout1": 0,
+  "dropout2": 0,
+  "dropout3": 0,
+  "hidden1": 16,
+  "hidden2": 8,
+  "hidden3": 8,
+  "hidden4": 8,
+  "l1": 0,
+  "l2": 0
+}

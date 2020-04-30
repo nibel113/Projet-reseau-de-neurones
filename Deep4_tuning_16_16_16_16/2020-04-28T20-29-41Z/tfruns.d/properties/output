@@ -1,0 +1,6 @@
+
+> # Hyperparameter flags ---------------------------------------------------
+> 
+> FLAGS <- flags(
++   flag_numeric("dropout1", 0.5),
++   flag_numeric( .... [TRUNCATED] 

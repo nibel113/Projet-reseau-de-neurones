@@ -1,0 +1,35 @@
+
+> FLAGS <- flags(flag_numeric("dropout1", 0.25), flag_numeric("dropout2", 
++     0.5), flag_numeric("dropout3", 0.5), flag_integer("hidden1", 
++     6 .... [TRUNCATED] 
+
+> lambda.hom <- sum(learnNN$ClaimNb)/sum(learnNN$Exposure)
+
+> features.0 <- layer_input(shape = c(ncol(XlearnNN)))
+
+> net <- features.0 %>% layer_dense(units = FLAGS$hidden1, 
++     activation = "relu", kernel_initializer = initializer_he_normal(seed = 1), 
++     ke .... [TRUNCATED] 
+
+> volumes.0 <- layer_input(shape = c(1))
+
+> merged <- list(net, volumes.0) %>% layer_add() %>% 
++     layer_dense(units = 1, activation = k_exp, trainable = FALSE, 
++         weights = list(ar .... [TRUNCATED] 
+
+> model <- keras_model(inputs = list(features.0, volumes.0), 
++     outputs = merged)
+
+> model %>% compile(loss = Poisson.Deviance, optimizer = "nadam")
+
+> history <- model %>% fit(list(XlearnNN, WlearnNN), 
++     YlearnNN, validation_data = list(list(XvalNN, WvalNN), YvalNN), 
++     epochs = 1000, batc .... [TRUNCATED] 
+
+> data_fit <- as.data.frame(history)
+
+> ggplot(data_fit[which(!is.na(data_fit$value)), ], 
++     aes(x = epoch, y = value, col = data)) + geom_point()
+
+> score <- model %>% evaluate(list(XtestNN, WtestNN), 
++     YtestNN, verbose = 0)

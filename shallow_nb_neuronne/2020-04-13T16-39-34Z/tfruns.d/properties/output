@@ -1,0 +1,47 @@
+
+> # Hyperparameter flags ---------------------------------------------------
+> 
+> FLAGS <- flags(
++   flag_numeric("dropout1", 0.5),
++   flag_integer( .... [TRUNCATED] 
+
+> lambda.hom <- sum(learnNN$ClaimNb)/sum(learnNN$Exposure)
+
+> # Define Model --------------------------------------------------------------
+> 
+> features.0 <- layer_input(shape=c(ncol(XlearnNN)))         # defi .... [TRUNCATED] 
+
+> net <- features.0 %>%
++   #on ajoute kernel initialize direct dans le dense layer
++   layer_dense(units = FLAGS$hidden1,activation="relu",kernel_ini .... [TRUNCATED] 
+
+> volumes.0 <- layer_input(shape=c(1))                     # define network for offset
+
+> merged <- list(net, volumes.0) %>%                          # combine the two networks
++   layer_add(name='Add') %>% 
++   layer_dense(units=1, activ .... [TRUNCATED] 
+
+> model <- keras_model(inputs=list(features.0, volumes.0), outputs=merged)
+
+> model %>% compile(loss = Poisson.Deviance, optimizer = "nadam")
+
+> # Training & Evaluation ----------------------------------------------------
+> 
+> history <- model %>% fit(list(XlearnNN, WlearnNN), 
++              .... [TRUNCATED] 
+
+> data_fit <- as.data.frame(history)
+
+> ggplot(data_fit[which(!is.na(data_fit$value)),],aes(x=epoch,y=value,col=data))+
++   geom_point()
+
+> ggplot(data_fit[which(!is.na(data_fit$value)),],aes(x=epoch,y=value,col=data))+
++   geom_point()+
++   scale_y_continuous(limits=c(0.245,0.27))
+
+> score <- model %>% evaluate(
++   list(XtestNN,WtestNN), YtestNN,
++   verbose = 0
++ )
+
+> name <- c(name,"256_drop.5_l2_0.001avec_norm")

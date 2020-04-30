@@ -4,140 +4,73 @@ library(glue)        # For conveniently concatenating strings
 library(zeallot)  
 source("Pre-traitement.R")
 
-## on cherche les meilleures combinaisons de neurones par couche cachée
-## sans dropout, ni régularisation
+## Attention: peut être long à rouler
+## Les résultats qui figurent dans le rapport sont disponible dans le dépôt.
+## Il s'agit de simplement faire rouler seulement les fonctions ls_runs 
+
+
 runs <- tuning_run("Deep_3hidden_tuning.R", 
                    runs_dir = "Deep3_tuning_nb_neurone",
                    flags = list(
                      dropout1 = c(0),
                      dropout2 = c(0),
-                     hidden1=c(16,32,64),
-                     hidden2=c(64,256),
-                     hidden3=c(16,32),
-                     l1_1=c(0),
-                     l2_1=c(0),
-                     l1_2=c(0),
-                     l2_2=c(0),
-                     l1_3=c(0),
-                     l2_3=c(0))
+                     hidden1 = c(8, 16, 32),
+                     hidden2 = c(8, 16, 32),
+                     hidden3 = c(8, 16, 32),
+                     l1 = c(0),
+                     l2 = c(0))
 )
 
 view(ls_runs(runs_dir = "Deep3_tuning_nb_neurone"))
 
+tab_deep3 <- ls_runs(runs_dir = "Deep3_tuning_nb_neurone",latest_n=12,order=metric_val_loss,decreasing = F)
+
 ## on tune les dropouts pour la meilleure combinaison des neurones
 runs <- tuning_run("Deep_3hidden_tuning.R",
-                   runs_dir = "Deep3_tuning_64_64_32_dropout",
+                   runs_dir = "Deep3_tuning_32_16_8_dropout",
                    flags = list(
-                     dropout1 = c(0,0.25,0.5),
-                     dropout2 = c(0,0.25,0.5),
-                     hidden1=c(64),
-                     hidden2=c(64),
-                     hidden3=c(32),
-                     l1_1=c(0),
-                     l2_1=c(0),
-                     l1_2=c(0),
-                     l2_2=c(0),
-                     l1_3=c(0),
-                     l2_3=c(0))
+                     dropout1 = c(0, 0.25, 0.5),
+                     dropout2 = c(0, 0.25, 0.5),
+                     hidden1 = c(32),
+                     hidden2 = c(16),
+                     hidden3 = c(8),
+                     l1 = c(0),
+                     l2 = c(0))
 )
 
-view(ls_runs(runs_dir = "Deep3_tuning_64_64_32_dropout"))
+view(ls_runs(runs_dir = "Deep3_tuning_32_16_8_dropout"))
+tab_deep3_32_16_8 <- ls_runs(runs_dir = "Deep3_tuning_32_16_8_dropout",order=metric_val_loss,decreasing = F)
 
-## on tune régularisation lasso
 runs <- tuning_run("Deep_3hidden_tuning.R",
-                   runs_dir = "Deep3_tuning_64_64_32_dropout0_0.5_l2",
+                   runs_dir = "Deep3_tuning_32_16_8_dropout",
                    flags = list(
                      dropout1 = c(0),
                      dropout2 = c(0.5),
-                     hidden1=c(64),
-                     hidden2=c(64),
-                     hidden3=c(32),
-                     l1_1=c(0),
-                     l2_1=c(0,0.0001),
-                     l1_2=c(0),
-                     l2_2=c(0,0.0001),
-                     l1_3=c(0),
-                     l2_3=c(0,0.0001))
+                     hidden1 = c(32),
+                     hidden2 = c(16),
+                     hidden3 = c(8),
+                     l1=c(0, 0.00001),
+                     l2=c(0, 0.00001))
 )
 
-view(ls_runs(runs_dir = "Deep3_tuning_64_64_32_dropout0_0.5_l2"))
+view(ls_runs(runs_dir = "Deep3_tuning_32_16_8_dropout"))
+tab_deep3_32_16_8 <- ls_runs(runs_dir = "Deep3_tuning_32_16_8_dropout",order=metric_val_loss,decreasing = F)
 
-## on tune l1
+
 runs <- tuning_run("Deep_3hidden_tuning.R",
-                   runs_dir = "Deep3_tuning_64_64_32_dropout0_0.5_l1",
+                   runs_dir = "Deep3_tuning_8_8_8_dropout",
                    flags = list(
-                     dropout1 = c(0),
-                     dropout2 = c(0.5),
-                     hidden1=c(64),
-                     hidden2=c(64),
-                     hidden3=c(32),
-                     l1_1=c(0,0.0001),
-                     l2_1=c(0),
-                     l1_2=c(0,0.0001),
-                     l2_2=c(0),
-                     l1_3=c(0,0.0001),
-                     l2_3=c(0.0001))
+                     dropout1 = c(0, 0.25, 0.5),
+                     dropout2 = c(0, 0.25, 0.5),
+                     hidden1 = c(8),
+                     hidden2 = c(8),
+                     hidden3 = c(8),
+                     l1 = c(0),
+                     l2 = c(0))
 )
 
-view(ls_runs(runs_dir = "Deep3_tuning_64_64_32_dropout0_0.5_l1"))
-
-## On tune la valeur des paramètres choisies
-runs <- tuning_run("Deep_3hidden_tuning.R",
-                   runs_dir = "Deep3_tuning_64_64_32_drop2_l2",
-                   flags = list(
-                     dropout1 = c(0),
-                     dropout2 = c(0.25,0.5),
-                     hidden1=c(64),
-                     hidden2=c(64),
-                     hidden3=c(32),
-                     l1_1=c(0),
-                     l2_1=c(0),
-                     l1_2=c(0),
-                     l2_2=c(0),
-                     l1_3=c(0),
-                     l2_3=c(0.01,0.001,0.0001))
-)
-
-view(ls_runs(runs_dir = "Deep3_tuning_64_64_32_drop2_l2"))
-##drop2 0.5 et l2 0.001
+view(ls_runs(runs_dir = "Deep3_tuning_8_8_8_dropout"))
+tab_deep3_8_8_8 <- ls_runs(runs_dir = "Deep3_tuning_8_8_8_dropout",order=metric_val_loss,decreasing = F)
 
 
 
-## on tune la combinaison qui semble apprendre le plus facilement avec 
-## le plus petit loss pour le training set, peut-être qu'en y ajoutant des dropout et 
-## des régularisations, on sera capable de garder cette facilité sans surajuster.
-
-runs <- tuning_run("Deep_3hidden_tuning.R", 
-                   runs_dir = "Deep3_tuning_64_256_32_dropout",
-                   flags = list(
-                     dropout1 = c(0,.25,.5),
-                     dropout2 = c(0,.25,.5),
-                     hidden1=c(64),
-                     hidden2=c(256),
-                     hidden3=c(32),
-                     l1_1=c(0),
-                     l2_1=c(0),
-                     l1_2=c(0),
-                     l2_2=c(0),
-                     l1_3=c(0),
-                     l2_3=c(0))
-)
-view(ls_runs(runs_dir = "Deep3_tuning_64_256_32_dropout"))
-
-
-runs <- tuning_run("Deep_3hidden_tuning.R", 
-                   runs_dir = "Deep3_tuning_64_256_32_dropout.5_.5_l2",
-                   flags = list(
-                     dropout1 = c(.5),
-                     dropout2 = c(.5),
-                     hidden1=c(64),
-                     hidden2=c(256),
-                     hidden3=c(32),
-                     l1_1=c(0),
-                     l2_1=c(0,0.0001),
-                     l1_2=c(0),
-                     l2_2=c(0,0.0001),
-                     l1_3=c(0),
-                     l2_3=c(0,0.0001))
-)
-view(ls_runs(runs_dir = "Deep3_tuning_64_256_32_dropout.5_.5_l2"))

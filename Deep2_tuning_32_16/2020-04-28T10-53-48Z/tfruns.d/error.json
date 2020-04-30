@@ -1,0 +1,4 @@
+{
+  "message": "The following flags were provided but not declared: l1_1, l2_1",
+  "traceback": ["stop(\"The following flags were provided but not declared: \", \n    paste(undeclared, collapse = \", \"), call. = FALSE)", "parse_flags(FLAGS, config, file, arguments)", "flags(flag_numeric(\"dropout1\", 0.25), flag_numeric(\"dropout2\", \n    0), flag_integer(\"hidden1\", 16), flag_integer(\"hidden2\", \n    16), flag_numeric(\"l1\", 0), flag_numeric(\"l2\", 0))", "eval(ei, envir)", "eval(ei, envir)", "withVisible(eval(ei, envir))", "tuning_run(\"Deep_2hidden_tuning.R\", runs_dir = \"Deep2_tuning_32_16\", \n    flags = list(dropout1 = c(0, 0.25), dropout2 = c(0, 0.25), \n        hidden1 = c(32), hidden2 = c(16), l1_1 = c(0), l2_1 = c(0)))"]
+}
