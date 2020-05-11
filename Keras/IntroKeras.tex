@@ -1,0 +1,125 @@
+\documentclass[11pt,letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{adjustbox}
+\usepackage{xcolor}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+  %% Configuration de listings
+\lstset{language = R,
+		basicstyle = \footnotesize\ttfamily\NoAutoSpacing,
+		extendedchars = true,
+		showstringspaces = false,
+		frame = t,
+		xleftmargin = 3.4pt,
+		numbers = left,
+		backgroundcolor=\color{backcolour},   
+    	commentstyle=\color{codegreen},
+    	numberstyle=\tiny\color{codegray},
+    	breakatwhitespace=false,         
+   	 	breaklines=true,                 
+    	captionpos=t,                    
+    	keepspaces=true,                   
+    	numbersep=5pt,                  
+    	showspaces=false,
+    	showtabs=false}
+		
+\renewcommand{\lstlistingname}{Code}
+
+\lstset{literate=
+  {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+  {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+  {à}{{\`a}}1 {è}{{\`e}}1 {ì}{{\`i}}1 {ò}{{\`o}}1 {ù}{{\`u}}1
+  {À}{{\`A}}1 {È}{{\'E}}1 {Ì}{{\`I}}1 {Ò}{{\`O}}1 {Ù}{{\`U}}1
+  {ä}{{\"a}}1 {ë}{{\"e}}1 {ï}{{\"i}}1 {ö}{{\"o}}1 {ü}{{\"u}}1
+  {Ä}{{\"A}}1 {Ë}{{\"E}}1 {Ï}{{\"I}}1 {Ö}{{\"O}}1 {Ü}{{\"U}}1
+  {â}{{\^a}}1 {ê}{{\^e}}1 {î}{{\^i}}1 {ô}{{\^o}}1 {û}{{\^u}}1
+  {Â}{{\^A}}1 {Ê}{{\^E}}1 {Î}{{\^I}}1 {Ô}{{\^O}}1 {Û}{{\^U}}1
+  {Ã}{{\~A}}1 {ã}{{\~a}}1 {Õ}{{\~O}}1 {õ}{{\~o}}1
+  {œ}{{\oe}}1 {Œ}{{\OE}}1 {æ}{{\ae}}1 {Æ}{{\AE}}1 {ß}{{\ss}}1
+  {ű}{{\H{u}}}1 {Ű}{{\H{U}}}1 {ő}{{\H{o}}}1 {Ő}{{\H{O}}}1
+  {ç}{{\c c}}1 {Ç}{{\c C}}1 {ø}{{\o}}1 {å}{{\r a}}1 {Å}{{\r A}}1
+  {€}{{\euro}}1 {£}{{\pounds}}1 {«}{{\guillemotleft}}1
+  {»}{{\guillemotright}}1 {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {¿}{{?`}}1
+}
+
+\begin{document}
+
+Le présent document porte sur l'utilisation du paquetage \verb`keras` pour la création d'un réseau de neurones à propagation directe de trois couches cachées. On construit le réseau sur les données \verb`freMTPLfreq` du paquetage \verb`CASdatasets`. 
+
+\section{Présentation}
+
+Le paquetage \verb`R`, \verb`keras`, est une interface au paquetage \verb`Keras` développé en \verb`Python`. Cela permet d'utiliser toutes les fonctionnalités de \verb`Keras` tout en utilisant \verb`R`. 
+
+\verb`Keras` est une interface de programmation applicative ( « API, application programming interface ») qui permet d'utiliser plusieurs bibliotèques d'apprentissage machine comme \verb`TensorFlow`, \verb`Microsoft Cognitive Toolkit`, \verb`Theano` ou \verb`PlaidML`. Cette interface permet d'implémenter rapidement des réseaux de neurones profonds avec des architectures de toutes sortes. Elle permet aussi de traiter le même code sur CPU ou sur GPU.
+
+L'avantage d'utiliser \verb`keras` avec \verb`R` est d'avoir la possibilité de créer toutes sortes de modèles d'apprentissage profond avec une relative facilité pour débuter. L'inconvénient est de devoir télécharcher une distribution \verb`Python`. 
+
+
+
+\section{Installation}
+
+Par défaut, \verb`keras` utilise la bibliotèque \verb`TensorFlow`. La fonction \verb`install_keras()` permet de configurer \verb`Keras` et \verb`TensorFlow` en même temps pour une utilisation sur CPU. Il est possible de les configurer pour une utilisation sur GPU en changeant les paramètres de la fonction \verb`install_keras()`. 
+
+
+\begin{lstlisting}
+install.packages("keras")
+
+library(keras)
+install_keras()
+\end{lstlisting}
+
+
+
+\section{Pré-traitement des données}
+
+\begin{lstlisting}
+
+library(CASdatasets)
+library(tidyverse)
+data(freMTPLfreq)
+
+dat <- freMTPLfreq %>%
+  as_tibble() %>%
+    mutate_at(vars(Gas, Brand, Region), factor) %>%
+    mutate_at(vars(Power),as.integer) %>% 
+
+    mutate(Exposure = if_else(Exposure > 1, 1, Exposure))%>% 
+    mutate(DriverAge= ifelse(DriverAge > 85,85,DriverAge)) %>% 
+  mutate(CarAge = ifelse(CarAge > 20,20,CarAge))
+
+# Création échantillons d'entrainement, de test et de validatiion
+
+set.seed(100)
+ll <- sample(which(dat$ClaimNb==0), round(0.8*length(which(dat$ClaimNb==0))), replace = FALSE)
+ll <- c(ll,sample(which(dat$ClaimNb==1), round(0.8*length(which(dat$ClaimNb==1))), replace = FALSE))
+ll <- c(ll,sample(which(dat$ClaimNb==2), round(0.8*length(which(dat$ClaimNb==2))), replace = FALSE))
+ll <- c(ll,sample(which(dat$ClaimNb==3), round(0.8*length(which(dat$ClaimNb==3))), replace = FALSE))
+ll <- c(ll,sample(which(dat$ClaimNb==4), round(0.8*length(which(dat$ClaimNb==4))), replace = FALSE))
+
+
+learn <- dat[ll,]
+testNN <- dat[-ll,]
+
+set.seed(200)
+ll2 <- sample(which(learn$ClaimNb==0), round(0.75*length(which(learn$ClaimNb==0))), replace = FALSE)
+ll2 <- c(ll2,sample(which(learn$ClaimNb==1), round(0.75*length(which(learn$ClaimNb==1))), replace = FALSE))
+ll2 <- c(ll2,sample(which(learn$ClaimNb==2), round(0.75*length(which(learn$ClaimNb==2))), replace = FALSE))
+ll2 <- c(ll2,sample(which(learn$ClaimNb==3), round(0.75*length(which(learn$ClaimNb==3))), replace = FALSE))
+ll2 <- c(ll2,sample(which(learn$ClaimNb==4), round(0.75*length(which(learn$ClaimNb==4))), replace = FALSE))
+
+learnNN <- learn[ll2,]
+valNN <- learn[-ll2,]
+
+\end{lstlisting}
+
+\end{document}
