@@ -2,7 +2,7 @@
 
 Projet de recherche dans le cadre du cours ACT-2101 de l'Université Laval sous la supervision de la professeure Marie-Pier Côté. 
 On y compare différentes architectures de réseaux de neurones à propagation directe (« feed forward neural networks »). 
-Deux techniques ont été principalement appliquées pour obtenir de meilleurs résultats, soit l'approche CANN, https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3320525,
+Deux techniques ont été principalement appliquées pour obtenir de meilleurs résultats, soit l'approche CANN, https://doi.org/10.1017/asb.2018.42,
  et les couches « embedding ». 
  
 ## Description de dépôt
