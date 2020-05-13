@@ -46,17 +46,19 @@ library(keras)
 
 
 # Pré-traitement des données
+On se limite à 25000 observations pour limiter le temps de calcul. 
 
 ```{r,cache=TRUE}
 library(CASdatasets)
 library(tidyverse)
+library(caret)
+
 data(freMTPLfreq)
 
-dat <- freMTPLfreq %>%
+dat <- freMTPLfreq[1:25000,] %>%
   as_tibble() %>%
     mutate_at(vars(Gas, Brand, Region), factor) %>%
     mutate_at(vars(Power),as.integer) %>% 
-
     mutate(Exposure = if_else(Exposure > 1, 1, Exposure))%>% 
     mutate(DriverAge= ifelse(DriverAge > 85,85,DriverAge)) %>% 
   mutate(CarAge = ifelse(CarAge > 20,20,CarAge))
@@ -64,25 +66,17 @@ dat <- freMTPLfreq %>%
 # Création échantillons d'entrainement, de test et de validatiion
 
 set.seed(100)
-ll <- sample(which(dat$ClaimNb==0), round(0.8*length(which(dat$ClaimNb==0))), replace = FALSE)
-ll <- c(ll,sample(which(dat$ClaimNb==1), round(0.8*length(which(dat$ClaimNb==1))), replace = FALSE))
-ll <- c(ll,sample(which(dat$ClaimNb==2), round(0.8*length(which(dat$ClaimNb==2))), replace = FALSE))
-ll <- c(ll,sample(which(dat$ClaimNb==3), round(0.8*length(which(dat$ClaimNb==3))), replace = FALSE))
-ll <- c(ll,sample(which(dat$ClaimNb==4), round(0.8*length(which(dat$ClaimNb==4))), replace = FALSE))
 
+train <- createDataPartition(dat$ClaimNb,
+                             p=0.8,
+                             list = F)
 
-learn <- dat[ll,]
-testNN <- dat[-ll,]
+dat_train <- dat[train,]
+dat_test <- dat[-train,]
 
-set.seed(200)
-ll2 <- sample(which(learn$ClaimNb==0), round(0.75*length(which(learn$ClaimNb==0))), replace = FALSE)
-ll2 <- c(ll2,sample(which(learn$ClaimNb==1), round(0.75*length(which(learn$ClaimNb==1))), replace = FALSE))
-ll2 <- c(ll2,sample(which(learn$ClaimNb==2), round(0.75*length(which(learn$ClaimNb==2))), replace = FALSE))
-ll2 <- c(ll2,sample(which(learn$ClaimNb==3), round(0.75*length(which(learn$ClaimNb==3))), replace = FALSE))
-ll2 <- c(ll2,sample(which(learn$ClaimNb==4), round(0.75*length(which(learn$ClaimNb==4))), replace = FALSE))
-
-learnNN <- learn[ll2,]
-valNN <- learn[-ll2,]
+valid <- createDataPartition(dat_train$ClaimNb,p=0.75,list=F)
+dat_valid <- dat_train[-valid,]
+dat_train <- dat_train[valid,]
 
 ```
 
