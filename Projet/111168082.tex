@@ -1,0 +1,152 @@
+%% GABARIT POUR MÉMOIRE STANDARD
+%%
+%% Consulter la documentation de la classe ulthese pour une
+%% description détaillée de la classe, de ce gabarit et des options
+%% disponibles.
+%%
+%% [Ne pas hésiter à supprimer les commentaires après les avoir lus.]
+%%
+%% Déclaration de la classe avec le type de grade
+%%   [l'un de MATDR, MArch, MA, LLM, MErg, MMus, MPht, MSc, MScGeogr,
+%%    MServSoc, MPsEd]
+%% et les langues les plus courantes. Le français sera la langue par
+%% défaut du document.
+\documentclass[projet,english,french]{ulthese}
+  %% Encodage utilisé pour les caractères accentués dans les fichiers
+  %% source du document. Les gabarits sont encodés en UTF-8. Inutile
+  %% avec XeLaTeX, qui gère Unicode nativement.
+  \ifxetex\else \usepackage[utf8]{inputenc} \fi
+  
+  %% Charger ici les autres paquetages nécessaires pour le document.
+  %% Quelques exemples; décommenter au besoin.
+  \usepackage{amsmath}       % recommandé pour les mathématiques
+  %\usepackage{icomma}        % gestion de la virgule dans les nombres
+  \usepackage{tikz}
+  \usepackage{xspace}
+  \usepackage{fvextra}
+  \usepackage{listings}
+  \usepackage{adjustbox}
+  \usepackage{xcolor}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+  %% Configuration de listings
+\lstset{language = R,
+		basicstyle = \footnotesize\ttfamily\NoAutoSpacing,
+		extendedchars = true,
+		showstringspaces = false,
+		frame = t,
+		xleftmargin = 3.4pt,
+		numbers = left,
+		backgroundcolor=\color{backcolour},   
+    	commentstyle=\color{codegreen},
+    	numberstyle=\tiny\color{codegray},
+    	breakatwhitespace=false,         
+   	 	breaklines=true,                 
+    	captionpos=t,                    
+    	keepspaces=true,                   
+    	numbersep=5pt,                  
+    	showspaces=false,
+    	showtabs=false}
+		
+\renewcommand{\lstlistingname}{Code}
+
+\lstset{literate=
+  {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+  {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+  {à}{{\`a}}1 {è}{{\`e}}1 {ì}{{\`i}}1 {ò}{{\`o}}1 {ù}{{\`u}}1
+  {À}{{\`A}}1 {È}{{\'E}}1 {Ì}{{\`I}}1 {Ò}{{\`O}}1 {Ù}{{\`U}}1
+  {ä}{{\"a}}1 {ë}{{\"e}}1 {ï}{{\"i}}1 {ö}{{\"o}}1 {ü}{{\"u}}1
+  {Ä}{{\"A}}1 {Ë}{{\"E}}1 {Ï}{{\"I}}1 {Ö}{{\"O}}1 {Ü}{{\"U}}1
+  {â}{{\^a}}1 {ê}{{\^e}}1 {î}{{\^i}}1 {ô}{{\^o}}1 {û}{{\^u}}1
+  {Â}{{\^A}}1 {Ê}{{\^E}}1 {Î}{{\^I}}1 {Ô}{{\^O}}1 {Û}{{\^U}}1
+  {Ã}{{\~A}}1 {ã}{{\~a}}1 {Õ}{{\~O}}1 {õ}{{\~o}}1
+  {œ}{{\oe}}1 {Œ}{{\OE}}1 {æ}{{\ae}}1 {Æ}{{\AE}}1 {ß}{{\ss}}1
+  {ű}{{\H{u}}}1 {Ű}{{\H{U}}}1 {ő}{{\H{o}}}1 {Ő}{{\H{O}}}1
+  {ç}{{\c c}}1 {Ç}{{\c C}}1 {ø}{{\o}}1 {å}{{\r a}}1 {Å}{{\r A}}1
+  {€}{{\euro}}1 {£}{{\pounds}}1 {«}{{\guillemotleft}}1
+  {»}{{\guillemotright}}1 {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {¿}{{?`}}1
+}
+  %% Utilisation d'une autre police de caractères pour le document.
+  %% - Sous LaTeX
+  \usepackage{mathpazo}      % texte et mathématiques en Palatino
+  %\usepackage{mathptmx}
+  \usepackage{amsfonts}      % texte et mathématiques en Times
+  %% - Sous XeLaTeX
+  %\setmainfont{TeX Gyre Pagella}      % texte en Pagella (Palatino)
+  %\setmathfont{TeX Gyre Pagella Math} % mathématiques en Pagella (Palatino)
+  %\setmainfont{TeX Gyre Termes}       % texte en Termes (Times)
+  %\setmathfont{TeX Gyre Termes Math}  % mathématiques en Termes (Times)
+
+  %% Options de mise en forme du mode français de babel. Consulter la
+  %% documentation du paquetage babel pour les options disponibles.
+  %% Désactiver (effacer ou mettre en commentaire) si l'option
+  %% 'nobabel' est spécifiée au chargement de la classe.
+  \frenchbsetup{%
+  	StandardLists=true,
+    StandardItemizeEnv=true,       % format standard des listes
+    ThinSpaceInFrenchNumbers=true, % espace fine dans les nombres
+    og=«, fg=»                         % caractères « et » sont les guillemets
+  }
+
+
+  %% Style de la bibliographie.
+ \bibliographystyle{francais}
+
+  %% Composition de la page frontispice. Remplacer les éléments entre < >.
+  %% Supprimer les caractères < >. Couper un long titre ou un long
+  %% sous-titre manuellement avec \\.
+  \titre{Réseau de neurones en actuariat}
+  % \titre{Ceci est un exemple de long titre \\
+  %   avec saut de ligne manuel}
+  % \soustitre{Sous-titre le cas échéant}
+  % \soustitre{Ceci est un exemple de long sous-titre \\
+  %   avec saut de ligne manuel}
+  \auteur{Nicolas Bellemare}
+  \programme{Baccalauréat en actuariat}
+  \direction{Marie-Pier Côté, directrice de recherche}
+  % \codirection{<Prénom Nom>, <codirecteur ou codirectrice> de recherche}
+  % \codirection{<Prénom Nom>, <codirecteur ou codirectrice> de recherche \\
+  %              <Prénom Nom>, <codirecteur ou codirectrice> de recherche}
+
+  %% Les commandes ci-dessous servent uniquement pour la création
+  %% d'une page de titre (interdite lors du dépôt à la FESP).
+   \annee{2020}
+
+\begin{document}
+
+\frontmatter                    % pages liminaires
+
+\pagetitre                  % production de la page titre
+           % résumé français
+\cleardoublepage
+
+\tableofcontents                % production de la TdM
+\cleardoublepage
+
+\listoftables                   % production de la liste des tableaux
+\cleardoublepage
+
+\listoffigures                  % production de la liste des figures
+\cleardoublepage
+
+
+
+\mainmatter                     % corps du document
+
+\include{introduction}          % introduction
+\include{chapRN}             	% chapitre Théorie des réseaux de neurones
+\include{Application}           
+\include{conclusion}            % conclusion
+
+\appendix                       % annexes le cas échéant
+
+\include{annexe}
+\nocite{Hastie/etal:2009}
+\nocite{wuthrich2019data}
+
+\bibliography{Biblio}                 % production de la bibliographie
+
+\end{document}
